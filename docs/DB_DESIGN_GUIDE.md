@@ -133,8 +133,8 @@ npx supabase gen types typescript --project-id "wcyoeixzjcnwbeplndgu" > src/type
 
 ## 5. 체크리스트
 
-- [ ] 테이블 생성 완료 (`profiles`, `notes`)
-- [ ] RLS 정책 적용 및 활성화 완료
-- [ ] Supabase CLI 로그인 완료 (`npx supabase login`)
-- [ ] 타입 저장 폴더 생성 완료 (`src/types`)
-- [ ] 프로젝트 내 타입 정의 파일(`src/types/supabase.ts`) 업데이트 확인
+- [x] 테이블 생성 완료 (`profiles`, `notes`)
+- [x] RLS 정책 적용 및 활성화 완료
+- [x] Supabase CLI 로그인 완료 (`npx supabase login`)
+- [x] 타입 저장 폴더 생성 완료 (`src/types`)
+- [x] 프로젝트 내 타입 정의 파일(`src/types/supabase.ts`) 업데이트 확인
