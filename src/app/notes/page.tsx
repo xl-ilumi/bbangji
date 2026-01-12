@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
 
@@ -20,10 +19,9 @@ export default function BakeryLogPage() {
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 인풋 초기화를 위해 ref 사용
-  const router = useRouter();
 
   // 1. 기록 조회
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     const { data, error } = await supabase
       .from("notes")
       .select("*")
@@ -32,16 +30,16 @@ export default function BakeryLogPage() {
     if (error) console.error("Error fetching reviews:", error);
     else setReviews(data || []);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [fetchReviews]);
 
   // 2. 파일 선택 핸들러
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile)); // 미리보기 생성
     }
@@ -175,14 +173,22 @@ export default function BakeryLogPage() {
         </h2>
 
         <div className="mb-4">
+          <label htmlFor="bakery-name" className="sr-only">
+            빵집 이름
+          </label>
           <input
+            id="bakery-name"
             type="text"
             placeholder="빵집 이름"
             value={bakeryName}
             onChange={(e) => setBakeryName(e.target.value)}
             className="w-full p-3 border border-orange-200 rounded-lg mb-2"
           />
+          <label htmlFor="review-text" className="sr-only">
+            후기 작성
+          </label>
           <textarea
+            id="review-text"
             placeholder="후기 작성"
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
@@ -191,10 +197,14 @@ export default function BakeryLogPage() {
 
           {/* 이미지 첨부 */}
           <div className="mb-2">
-            <label className="block text-sm font-bold text-orange-800 mb-1">
+            <label
+              htmlFor="file-upload"
+              className="block text-sm font-bold text-orange-800 mb-1 cursor-pointer"
+            >
               📷 사진 첨부
             </label>
             <input
+              id="file-upload"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
@@ -255,18 +265,20 @@ export default function BakeryLogPage() {
             <h3 className="font-bold text-xl mb-1 text-orange-950">
               {review.title}
             </h3>
-            <p className="text-gray-700 text-sm mb-4 flex-grow whitespace-pre-wrap">
+            <p className="text-gray-700 text-sm mb-4 grow whitespace-pre-wrap">
               {review.content}
             </p>
 
             <div className="flex justify-end gap-2 text-sm border-t pt-2 mt-auto">
               <button
+                type="button"
                 onClick={() => handleEditClick(review)}
                 className="text-blue-500"
               >
                 수정
               </button>
               <button
+                type="button"
                 onClick={() => handleDelete(review.id)}
                 className="text-red-500"
               >
