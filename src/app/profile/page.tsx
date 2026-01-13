@@ -154,10 +154,14 @@ export default function ProfilePage() {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-bold text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-bold text-gray-700 mb-1"
+          >
             이메일
           </label>
           <input
+            id="email"
             type="text"
             value={email}
             disabled
@@ -166,10 +170,14 @@ export default function ProfilePage() {
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-1">
+          <label
+            htmlFor="username"
+            className="block text-sm font-bold text-gray-700 mb-1"
+          >
             닉네임
           </label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
