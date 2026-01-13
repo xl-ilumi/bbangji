@@ -1,6 +1,3 @@
-Need to install the following packages:
-supabase@2.72.6
-Ok to proceed? (y) 
 export type Json =
   | string
   | number
@@ -444,6 +441,7 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      increment_view_count: { Args: { row_id: number }; Returns: undefined }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }

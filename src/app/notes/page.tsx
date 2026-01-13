@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
@@ -131,21 +132,6 @@ export default function BakeryLogPage() {
     fetchReviews();
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("지우시겠습니까?")) return;
-    const { error } = await supabase.from("notes").delete().eq("id", id);
-    if (!error) fetchReviews();
-  };
-
-  const handleEditClick = (review: BakeryReview) => {
-    setEditingId(review.id);
-    setBakeryName(review.title);
-    setReviewText(review.content || "");
-    setPreviewUrl(review.image_url || null); // 기존 이미지 미리보기
-    setFile(null); // 파일 상태는 초기화
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleCancelEdit = () => {
     setEditingId(null);
     setBakeryName("");
@@ -247,45 +233,35 @@ export default function BakeryLogPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="bg-white p-4 rounded-xl shadow-sm border border-orange-50 flex flex-col"
-          >
-            {/* 리스트 이미지 표시 */}
-            {review.image_url && (
-              <div className="relative w-full h-48 mb-3 rounded-lg overflow-hidden bg-gray-100">
-                <Image
-                  src={review.image_url}
-                  alt={review.title}
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            )}
-            <h3 className="font-bold text-xl mb-1 text-orange-950">
-              {review.title}
-            </h3>
-            <p className="text-gray-700 text-sm mb-4 grow whitespace-pre-wrap">
-              {review.content}
-            </p>
+          <Link key={review.id} href={`/notes/${review.id}`} className="block">
+            <div
+              className={`bg-white p-4 rounded-xl shadow-sm border border-orange-50 flex flex-col hover:shadow-md transition h-full ${editingId === review.id ? "border-2 border-green-500" : ""}`}
+            >
+              {/* 리스트 이미지 */}
+              {review.image_url && (
+                <div className="relative w-full h-48 mb-3 rounded-lg overflow-hidden bg-gray-100">
+                  <Image
+                    src={review.image_url}
+                    alt={review.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              )}
+              <h3 className="font-bold text-xl mb-1 text-orange-950">
+                {review.title}
+              </h3>
+              <p className="text-gray-700 text-sm mb-4 grow line-clamp-3 whitespace-pre-wrap">
+                {review.content}
+              </p>
 
-            <div className="flex justify-end gap-2 text-sm border-t pt-2 mt-auto">
-              <button
-                type="button"
-                onClick={() => handleEditClick(review)}
-                className="text-blue-500"
-              >
-                수정
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(review.id)}
-                className="text-red-500"
-              >
-                삭제
-              </button>
+              <div className="flex justify-between items-center text-xs text-gray-400 border-t pt-2 mt-auto">
+                <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                {/* ✨ 수정/삭제 버튼 제거됨 */}
+                <span className="text-orange-400">자세히 보기 →</span>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

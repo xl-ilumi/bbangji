@@ -81,45 +81,45 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {recommendedNotes.map((note) => (
-            <div
-              key={note.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group h-full flex flex-col"
-            >
-              {/* 이미지 영역 */}
-              <div className="relative h-48 bg-gray-100 shrink-0">
-                {note.image_url ? (
-                  <Image
-                    src={note.image_url}
-                    alt={note.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl bg-orange-50">
-                    🍞
+            <Link href={`/notes/${note.id}`} key={note.id}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group h-full flex flex-col">
+                {/* 이미지 영역 */}
+                <div className="relative h-48 bg-gray-100 shrink-0">
+                  {note.image_url ? (
+                    <Image
+                      src={note.image_url}
+                      alt={note.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl bg-orange-50">
+                      🍞
+                    </div>
+                  )}
+                  {/* 조회수 배지 */}
+                  <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                    👀 {note.view_count || 0}
                   </div>
-                )}
-                {/* 조회수 배지 */}
-                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                  👀 {note.view_count || 0}
                 </div>
-              </div>
 
-              {/* 텍스트 영역 */}
-              <div className="p-5 flex flex-col grow">
-                <h3 className="font-bold text-lg text-gray-900 mb-2 truncate">
-                  {note.title}
-                </h3>
-                <p className="text-gray-600 text-sm line-clamp-2 mb-4 h-10">
-                  {note.content}
-                </p>
-                <div className="mt-auto flex items-center justify-between text-xs text-gray-400 border-t pt-3">
-                  <span>{new Date(note.created_at).toLocaleDateString()}</span>
-                  {/* @ts-ignore */}
-                  <span>by {note.profiles?.username || "익명"}</span>
+                {/* 텍스트 영역 */}
+                <div className="p-5 flex flex-col grow">
+                  <h3 className="font-bold text-lg text-gray-900 mb-2 truncate">
+                    {note.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-2 mb-4 h-10">
+                    {note.content}
+                  </p>
+                  <div className="mt-auto flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                    <span>
+                      {new Date(note.created_at).toLocaleDateString()}
+                    </span>
+                    <span>by {note.profiles?.username || "익명"}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
 
           {recommendedNotes.length === 0 && (
