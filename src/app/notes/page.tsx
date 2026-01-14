@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import LikeButton from "@/components/notes/LikeButton";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
 
@@ -70,6 +71,7 @@ export default function BakeryLogPage() {
               </p>
               <div className="flex justify-between items-center text-xs text-gray-400 border-t pt-3 mt-auto">
                 <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                <LikeButton noteId={review.id} />
                 <span className="text-orange-400 font-medium">
                   자세히 보기 →
                 </span>

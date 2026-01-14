@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthCheckWrapper from "@/components/notes/AuthCheckWrapper";
 import CommentSection from "@/components/notes/CommentSection";
+import LikeButton from "@/components/notes/LikeButton";
 import type { Database } from "@/types/supabase";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -79,8 +80,11 @@ export default async function NoteDetailPage(props: Props) {
                 </p>
               </div>
             </div>
-            <div className="text-sm text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
-              조회수 {note.view_count}
+            <div className="flex items-center gap-2">
+              <LikeButton noteId={note.id} />
+              <div className="text-sm text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+                조회수 {note.view_count}
+              </div>
             </div>
           </div>
         </header>
