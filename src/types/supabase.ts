@@ -47,6 +47,45 @@ export type Database = {
         }
         Relationships: []
       }
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          note_id: number
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          note_id: number
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          note_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: string | null

@@ -1,0 +1,231 @@
+"use client";
+
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/supabase";
+
+type CommentWithProfile = Database["public"]["Tables"]["comments"]["Row"] & {
+  profiles: { username: string; avatar_url: string | null } | null;
+};
+
+interface Props {
+  noteId: number;
+}
+
+export default function CommentSection({ noteId }: Props) {
+  const [comments, setComments] = useState<CommentWithProfile[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // ✨ 수정 모드 상태
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+
+  // 1. 현재 로그인 유저 확인
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+  }, []);
+
+  // 2. 댓글 목록 조회
+  const fetchComments = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("comments")
+      .select("*, profiles(username, avatar_url)")
+      .eq("note_id", noteId)
+      .order("created_at", { ascending: true });
+
+    if (error) console.error(error);
+    else setComments((data as CommentWithProfile[]) || []);
+  }, [noteId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  // 3. 댓글 작성
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    if (!currentUserId) return alert("로그인이 필요합니다.");
+
+    setLoading(true);
+    const { error } = await supabase.from("comments").insert({
+      content: newComment,
+      note_id: noteId,
+      user_id: currentUserId,
+    });
+
+    if (error) {
+      alert("댓글 작성 실패");
+      console.error(error);
+    } else {
+      setNewComment("");
+      fetchComments();
+    }
+    setLoading(false);
+  };
+
+  // 4. 댓글 삭제
+  const handleDelete = async (commentId: number) => {
+    if (!confirm("댓글을 삭제하시겠습니까?")) return;
+
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) alert("삭제 실패");
+    else fetchComments();
+  };
+
+  // 5. ✨ 댓글 수정 모드 진입
+  const startEditing = (comment: CommentWithProfile) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  };
+
+  // 6. ✨ 댓글 수정 저장
+  const handleUpdate = async (commentId: number) => {
+    if (!editContent.trim()) return;
+
+    const { error } = await supabase
+      .from("comments")
+      .update({ content: editContent })
+      .eq("id", commentId);
+
+    if (error) {
+      alert("수정 실패");
+      console.error(error);
+    } else {
+      setEditingId(null);
+      setEditContent("");
+      fetchComments();
+    }
+  };
+
+  return (
+    <div className="mt-12 pt-8 border-t border-gray-100">
+      <h3 className="text-xl font-bold text-gray-800 mb-6">
+        댓글 <span className="text-orange-600">{comments.length}</span>
+      </h3>
+
+      {/* 댓글 작성 폼 */}
+      <form onSubmit={handleSubmit} className="mb-8 flex gap-2">
+        <input
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder={
+            currentUserId
+              ? "따뜻한 댓글을 남겨주세요 🥐"
+              : "로그인이 필요합니다"
+          }
+          disabled={!currentUserId}
+          className="flex-1 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+        />
+        <button
+          type="submit"
+          disabled={loading || !currentUserId}
+          className="px-6 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-300 transition"
+        >
+          등록
+        </button>
+      </form>
+
+      {/* 댓글 목록 */}
+      <div className="space-y-6">
+        {comments.map((comment) => (
+          <div key={comment.id} className="flex gap-4">
+            {/* 프로필 이미지 */}
+            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+              {comment.profiles?.avatar_url ? (
+                <Image
+                  src={comment.profiles.avatar_url}
+                  alt="avatar"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-lg">
+                  👤
+                </div>
+              )}
+            </div>
+
+            {/* 내용 영역 */}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-sm text-gray-800">
+                  {comment.profiles?.username || "알 수 없음"}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {new Date(comment.created_at).toLocaleString()}
+                </span>
+              </div>
+
+              {/* ✨ 수정 모드일 때 입력창 표시 */}
+              {editingId === comment.id ? (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="flex-1 p-2 border border-orange-200 rounded focus:outline-none focus:ring-2 focus:ring-orange-200 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleUpdate(comment.id)}
+                    className="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
+                  >
+                    저장
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(null)}
+                    className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded hover:bg-gray-300"
+                  >
+                    취소
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                  {comment.content}
+                </p>
+              )}
+            </div>
+
+            {/* 수정/삭제 버튼 (본인일 때만 & 수정 모드가 아닐 때만) */}
+            {currentUserId === comment.user_id && editingId !== comment.id && (
+              <div className="flex gap-2 h-fit">
+                <button
+                  type="button"
+                  onClick={() => startEditing(comment)}
+                  className="text-xs text-blue-400 hover:text-blue-600"
+                >
+                  수정
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(comment.id)}
+                  className="text-xs text-gray-400 hover:text-red-500"
+                >
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {comments.length === 0 && (
+          <p className="text-center text-gray-400 py-4 text-sm">
+            첫 번째 댓글을 남겨보세요!
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

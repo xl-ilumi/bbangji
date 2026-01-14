@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AuthCheckWrapper from "@/components/notes/AuthCheckWrapper";
+import CommentSection from "@/components/notes/CommentSection";
 import type { Database } from "@/types/supabase";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -97,10 +99,9 @@ export default async function NoteDetailPage(props: Props) {
         <div className="prose prose-lg max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed">
           {note.content}
         </div>
+
+        <CommentSection noteId={noteId} />
       </article>
     </div>
   );
 }
-
-// 4. 서버 컴포넌트 내부에 클라이언트 래퍼 임포트
-import AuthCheckWrapper from "@/components/notes/AuthCheckWrapper";
