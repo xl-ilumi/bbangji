@@ -18,14 +18,14 @@ export default function NoteActions({ noteId }: Props) {
       alert("삭제 실패");
     } else {
       alert("삭제되었습니다.");
-      router.push("/notes"); // 목록으로 이동
+      router.push("/notes");
       router.refresh();
     }
   };
 
   const handleEdit = () => {
-    // 목록 페이지의 입력 폼을 재사용하기 위해 쿼리 파라미터와 함께 이동
-    router.push(`/notes?edit_id=${noteId}`);
+    // 변경된 경로: 수정 전용 페이지로 이동
+    router.push(`/notes/${noteId}/edit`);
   };
 
   return (
