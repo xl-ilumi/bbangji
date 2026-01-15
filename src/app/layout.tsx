@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/common/Header";
+import KakaoMapScript from "@/components/common/KakaoMapScript";
 import AuthProvider from "@/providers/AuthProvider";
 
 const geistSans = Geist({
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <KakaoMapScript />
         <AuthProvider>
           <Header />
           <main className="container mx-auto p-4">{children}</main>
