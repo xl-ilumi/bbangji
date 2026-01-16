@@ -93,6 +93,10 @@ export default function Header() {
               빵지순례
             </Link>
 
+            <Link href="/bakeries/new" className="hover:text-orange-600">
+              빵집 등록
+            </Link>
+
             <button
               onClick={handleLogout}
               className="px-3 py-1 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50"
