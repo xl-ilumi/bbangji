@@ -89,6 +89,13 @@ export default function Header() {
               {username || session.user.email?.split("@")[0]}님
             </Link>
 
+            <Link
+              href="/map"
+              className="hover:text-orange-600 font-bold text-orange-800"
+            >
+              🗺️ 대동빵지도
+            </Link>
+
             <Link href="/notes" className="hover:text-orange-600">
               빵지순례
             </Link>
