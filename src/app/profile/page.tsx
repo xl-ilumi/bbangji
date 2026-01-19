@@ -61,7 +61,7 @@ export default function ProfilePage() {
       // 좋아요한 글 가져오기 (조인 쿼리)
       const { data: likedData } = await supabase
         .from("likes")
-        .select("notes(*)") // likes 테이블에서 notes 정보를 바로 가져옴
+        .select("notes(*)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -76,7 +76,7 @@ export default function ProfilePage() {
     loadData();
   }, [router]);
 
-  // 2. 프로필 업데이트 로직 (기존 로직 재사용)
+  // 2. 프로필 업데이트 로직
   const handleUpdateProfile = async () => {
     if (!user) return;
 
@@ -107,7 +107,7 @@ export default function ProfilePage() {
 
       alert("프로필이 업데이트되었습니다!");
       setIsEditing(false);
-      window.location.reload(); // 간단히 새로고침하여 반영
+      window.location.reload();
     } catch (error) {
       console.error(error);
       alert("업데이트 실패");
@@ -119,6 +119,34 @@ export default function ProfilePage() {
       const selectedFile = e.target.files[0];
       setEditFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  // ✨ 3. 회원 탈퇴 핸들러 (수정됨)
+  const handleWithdrawal = async () => {
+    if (
+      !confirm(
+        "정말로 탈퇴하시겠습니까?\\n탈퇴 시 계정과 모든 활동 내역이 영구적으로 삭제됩니다.",
+      )
+    )
+      return;
+
+    try {
+      // RPC(DB 함수)를 호출하여 auth.users 테이블에서 내 계정 삭제
+      // (Cascade 설정으로 인해 profiles, notes, likes 등도 자동 삭제됨)
+      const { error } = await supabase.rpc("delete_own_user");
+
+      if (error) throw error;
+
+      // 클라이언트 세션 정리
+      await supabase.auth.signOut();
+
+      alert("탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다. 🙇‍♂️");
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("탈퇴 처리 중 오류:", error);
+      alert("탈퇴 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
@@ -183,14 +211,12 @@ export default function ProfilePage() {
               />
               <div className="flex gap-2 justify-center md:justify-start">
                 <button
-                  type="button"
                   onClick={handleUpdateProfile}
                   className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600"
                 >
                   저장
                 </button>
                 <button
-                  type="button"
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300"
                 >
@@ -205,7 +231,6 @@ export default function ProfilePage() {
               </h2>
               <p className="text-gray-500 text-sm mb-4">{user?.email}</p>
               <button
-                type="button"
                 onClick={() => setIsEditing(true)}
                 className="text-xs px-3 py-1.5 border border-gray-300 rounded-full hover:bg-gray-50 transition"
               >
@@ -235,7 +260,6 @@ export default function ProfilePage() {
       {/* 2. 탭 메뉴 */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
-          type="button"
           onClick={() => setActiveTab("my_notes")}
           className={`flex-1 py-3 text-sm font-bold text-center transition border-b-2 ${
             activeTab === "my_notes"
@@ -304,6 +328,16 @@ export default function ProfilePage() {
             : "좋아요한 기록이 없습니다 💔"}
         </div>
       )}
+
+      {/* ✨ 4. 하단 탈퇴 버튼 영역 */}
+      <div className="mt-12 border-t border-gray-200 pt-6 text-right">
+        <button
+          onClick={handleWithdrawal}
+          className="text-xs text-gray-400 hover:text-red-500 underline transition"
+        >
+          회원 탈퇴하기
+        </button>
+      </div>
     </div>
   );
 }
