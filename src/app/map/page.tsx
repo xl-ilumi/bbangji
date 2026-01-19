@@ -2,8 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { CustomOverlayMap, Map, MapMarker } from "react-kakao-maps-sdk";
+import { useRouter } from "next/navigation";
+import { Fragment, useEffect, useState } from "react";
+import {
+  CustomOverlayMap,
+  Map as KakaoMap,
+  MapMarker,
+} from "react-kakao-maps-sdk";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
 
@@ -34,6 +39,8 @@ function BakeryThumbnail({ src, alt }: { src: string | null; alt: string }) {
 }
 
 export default function GlobalMapPage() {
+  const router = useRouter();
+
   const [bakeries, setBakeries] = useState<Bakery[]>([]);
   const [selectedBakery, setSelectedBakery] = useState<Bakery | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,33 +68,43 @@ export default function GlobalMapPage() {
     <div className="w-full h-[calc(100vh-64px)] relative">
       {" "}
       {/* 헤더 높이 제외 */}
-      <Map
+      <KakaoMap
         center={{ lat: 37.5665, lng: 126.978 }} // 초기 중심 좌표 (서울)
         style={{ width: "100%", height: "100%" }}
         level={8} // 줌 레벨
-        onClick={() => setSelectedBakery(null)} // 빈 곳 클릭 시 닫기
+        onClick={() => setSelectedBakery(null)}
       >
         {bakeries.map((bakery) => (
-          <div key={bakery.id}>
-            <MapMarker
-              position={{ lat: bakery.lat!, lng: bakery.lng! }}
-              onClick={() => setSelectedBakery(bakery)}
-              image={{
-                src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png", // 수정됨: 순수 URL만 입력
-                size: { width: 24, height: 35 },
-              }}
-              title={bakery.name}
-            />
+          <Fragment key={bakery.id}>
+            {bakery.lat && bakery.lng && (
+              <MapMarker
+                position={{ lat: bakery.lat, lng: bakery.lng }}
+                onClick={() => setSelectedBakery(bakery)}
+                image={{
+                  src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+                  size: { width: 24, height: 35 },
+                }}
+                title={bakery.name}
+              />
+            )}
 
             {/* 선택된 빵집 오버레이 */}
-            {selectedBakery?.id === bakery.id && (
+            {selectedBakery?.id === bakery.id && bakery.lat && bakery.lng && (
               <CustomOverlayMap
-                position={{ lat: bakery.lat!, lng: bakery.lng! }}
+                position={{ lat: bakery.lat, lng: bakery.lng }}
                 yAnchor={1.2}
+                clickable={true}
               >
-                <div className="bg-white rounded-xl shadow-lg border border-orange-100 p-4 w-64 relative animate-fade-in-up">
+                <div
+                  className="bg-white rounded-xl shadow-lg border border-orange-100 p-4 w-64 relative animate-fade-in-up"
+                  onClick={(e) => e.stopPropagation()} // 오버레이 내부 클릭 시 지도 클릭 이벤트 전파 방지
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-label="빵집 정보"
+                >
                   {/* 닫기 버튼 */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedBakery(null);
@@ -99,7 +116,7 @@ export default function GlobalMapPage() {
 
                   <div className="flex gap-3">
                     {/* ✨ 안전한 썸네일 컴포넌트 사용 */}
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-orange-50 flex-shrink-0">
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-orange-50 shrink-0">
                       <BakeryThumbnail
                         src={bakery.image_url}
                         alt={bakery.name}
@@ -114,38 +131,50 @@ export default function GlobalMapPage() {
                         {bakery.address}
                       </p>
                       <div className="flex gap-1 flex-wrap">
-                        {bakery.category?.slice(0, 2).map(
-                          (
-                            cat,
-                            idx, // 공간 관계상 2개만 노출
-                          ) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded"
-                            >
-                              {cat}
-                            </span>
-                          ),
-                        )}
+                        {bakery.category?.slice(0, 2).map((cat) => (
+                          <span
+                            key={cat}
+                            className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded"
+                          >
+                            {cat}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
 
                   {/* 액션 버튼 */}
                   <div className="mt-3 flex gap-2">
-                    <Link
-                      href={`/notes/create?bakery_name=${encodeURIComponent(bakery.name)}`}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/bakeries/${bakery.id}`);
+                      }}
+                      className="flex-1 text-center text-xs bg-white text-orange-600 border border-orange-200 py-2 rounded-lg hover:bg-orange-50 transition"
+                    >
+                      상세보기
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(
+                          `/notes/create?bakery_name=${encodeURIComponent(bakery.name)}`,
+                        );
+                      }}
                       className="flex-1 text-center text-xs bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition"
                     >
-                      후기 쓰기 📝
-                    </Link>
+                      후기 쓰기
+                    </button>
                   </div>
                 </div>
               </CustomOverlayMap>
             )}
-          </div>
+          </Fragment>
         ))}
-      </Map>
+      </KakaoMap>
       {/* 등록 유도 플로팅 버튼 */}
       <Link
         href="/bakeries/new"
