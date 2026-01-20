@@ -1,6 +1,6 @@
 "use client";
 
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { Map as KakaoMap, MapMarker } from "react-kakao-maps-sdk";
 
 interface Props {
   lat: number;
@@ -9,7 +9,7 @@ interface Props {
 
 export default function MiniMap({ lat, lng }: Props) {
   return (
-    <Map
+    <KakaoMap
       center={{ lat, lng }}
       style={{
         width: "100%",
@@ -22,6 +22,6 @@ export default function MiniMap({ lat, lng }: Props) {
       zoomable={false}
     >
       <MapMarker position={{ lat, lng }} />
-    </Map>
+    </KakaoMap>
   );
 }

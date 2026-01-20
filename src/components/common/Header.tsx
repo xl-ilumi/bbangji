@@ -3,13 +3,22 @@
 import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", userId)
+      .single();
+    if (data) setUsername(data.username);
+  }, []);
 
   useEffect(() => {
     // 1. 초기 세션 및 프로필 로드
@@ -28,43 +37,7 @@ export default function Header() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  // 3. ✨ [중요] 실시간 프로필 변경 감지
-  useEffect(() => {
-    if (!session?.user.id) return;
-
-    const channel = supabase
-      .channel("realtime_profile")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${session.user.id}`, // 내 프로필만 감지
-        },
-        (payload) => {
-          // 변경된 닉네임으로 상태 즉시 업데이트
-          const newProfile = payload.new as { username: string };
-          if (newProfile.username) setUsername(newProfile.username);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session]);
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", userId)
-      .single();
-    if (data) setUsername(data.username);
-  };
+  }, [fetchProfile]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -105,6 +78,7 @@ export default function Header() {
             </Link>
 
             <button
+              type="button"
               onClick={handleLogout}
               className="px-3 py-1 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50"
             >

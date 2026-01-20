@@ -97,6 +97,7 @@ export default function NewBakeryPage() {
           </p>
 
           <button
+            type="button"
             onClick={handleRegister}
             disabled={loading}
             className="w-full md:w-auto px-8 py-3 bg-orange-600 text-white font-bold rounded-full hover:bg-orange-700 transition disabled:bg-gray-400 shadow-lg hover:-translate-y-1"

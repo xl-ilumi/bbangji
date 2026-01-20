@@ -7,8 +7,8 @@ import CommentSection from "@/components/notes/CommentSection";
 import LikeButton from "@/components/notes/LikeButton";
 import type { Database } from "@/types/supabase";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export const dynamic = "force-dynamic";

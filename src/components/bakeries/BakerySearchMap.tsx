@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { useState } from "react";
+import { Map as KakaoMap, MapMarker } from "react-kakao-maps-sdk";
 
 interface PlaceType {
   id: string;
@@ -88,11 +88,12 @@ export default function BakerySearchMap({ onSelect }: Props) {
               검색 결과가 여기에 표시됩니다.
             </p>
           ) : (
-            <ul className="space-y-2">
+            <div className="space-y-2">
               {places.map((place) => (
-                <li
+                <button
+                  type="button"
                   key={place.id}
-                  className="p-3 border rounded-lg hover:bg-orange-50 cursor-pointer transition"
+                  className="w-full text-left p-3 border rounded-lg hover:bg-orange-50 cursor-pointer transition"
                   onClick={() => {
                     setMapCenter({
                       lat: parseFloat(place.y),
@@ -107,15 +108,15 @@ export default function BakerySearchMap({ onSelect }: Props) {
                   <p className="text-xs text-gray-500 truncate">
                     {place.road_address_name || place.address_name}
                   </p>
-                </li>
+                </button>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
         {/* 지도 */}
         <div className="flex-1 relative">
-          <Map
+          <KakaoMap
             center={mapCenter}
             style={{ width: "100%", height: "100%" }}
             level={3}
@@ -135,7 +136,7 @@ export default function BakerySearchMap({ onSelect }: Props) {
                 </div>
               </MapMarker>
             ))}
-          </Map>
+          </KakaoMap>
 
           {/* 모바일용 결과 목록 오버레이 (간소화) */}
           <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white p-2 max-h-40 overflow-y-auto border-t z-20 opacity-90">

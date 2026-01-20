@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import NoteForm from "@/components/notes/NoteForm";
 
 export default function CreateNotePage() {
@@ -6,7 +7,13 @@ export default function CreateNotePage() {
       <h1 className="text-3xl font-bold mb-8 text-center text-orange-900">
         📝 새 빵지순례 기록
       </h1>
-      <NoteForm />
+      <Suspense
+        fallback={
+          <div className="text-center p-10 text-orange-800">로딩 중... 🥐</div>
+        }
+      >
+        <NoteForm />
+      </Suspense>
     </div>
   );
 }

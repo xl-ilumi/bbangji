@@ -6,8 +6,8 @@ import MiniMap from "@/components/bakeries/MiniMap";
 import type { Database } from "@/types/supabase";
 
 // 서버 사이드 렌더링을 위한 클라이언트 생성
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export const dynamic = "force-dynamic";

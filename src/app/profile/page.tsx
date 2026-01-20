@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,11 +9,12 @@ import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
 
 type Note = Database["public"]["Tables"]["notes"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   // 탭 상태: 'my_notes' | 'liked_notes'
   const [activeTab, setActiveTab] = useState("my_notes");
@@ -66,9 +68,10 @@ export default function ProfilePage() {
         .order("created_at", { ascending: false });
 
       // likes 배열 안의 notes 객체만 추출
-      // @ts-expect-error
       const formattedLikedNotes =
-        likedData?.map((item) => item.notes).filter(Boolean) || [];
+        (likedData
+          ?.map((item) => item.notes as unknown as Note)
+          .filter(Boolean) as Note[]) || [];
       setLikedNotes(formattedLikedNotes);
 
       setLoading(false);
@@ -115,7 +118,7 @@ export default function ProfilePage() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const selectedFile = e.target.files[0];
       setEditFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
@@ -183,9 +186,11 @@ export default function ProfilePage() {
 
           {/* 수정 모드일 때 파일 입력 오버레이 */}
           {isEditing && (
-            <div
+            <button
+              type="button"
               className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
+              aria-label="프로필 이미지 변경"
             >
               <span className="text-white text-xs">변경</span>
               <input
@@ -195,7 +200,7 @@ export default function ProfilePage() {
                 onChange={handleFileChange}
                 accept="image/*"
               />
-            </div>
+            </button>
           )}
         </div>
 
@@ -211,12 +216,14 @@ export default function ProfilePage() {
               />
               <div className="flex gap-2 justify-center md:justify-start">
                 <button
+                  type="button"
                   onClick={handleUpdateProfile}
                   className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600"
                 >
                   저장
                 </button>
                 <button
+                  type="button"
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300"
                 >
@@ -231,6 +238,7 @@ export default function ProfilePage() {
               </h2>
               <p className="text-gray-500 text-sm mb-4">{user?.email}</p>
               <button
+                type="button"
                 onClick={() => setIsEditing(true)}
                 className="text-xs px-3 py-1.5 border border-gray-300 rounded-full hover:bg-gray-50 transition"
               >
@@ -260,6 +268,7 @@ export default function ProfilePage() {
       {/* 2. 탭 메뉴 */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
+          type="button"
           onClick={() => setActiveTab("my_notes")}
           className={`flex-1 py-3 text-sm font-bold text-center transition border-b-2 ${
             activeTab === "my_notes"
@@ -270,6 +279,7 @@ export default function ProfilePage() {
           📝 내가 쓴 빵지순례
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("liked_notes")}
           className={`flex-1 py-3 text-sm font-bold text-center transition border-b-2 ${
             activeTab === "liked_notes"
@@ -332,6 +342,7 @@ export default function ProfilePage() {
       {/* ✨ 4. 하단 탈퇴 버튼 영역 */}
       <div className="mt-12 border-t border-gray-200 pt-6 text-right">
         <button
+          type="button"
           onClick={handleWithdrawal}
           className="text-xs text-gray-400 hover:text-red-500 underline transition"
         >

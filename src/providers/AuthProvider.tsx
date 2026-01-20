@@ -9,7 +9,7 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [_session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     // 1. 초기 세션 가져오기

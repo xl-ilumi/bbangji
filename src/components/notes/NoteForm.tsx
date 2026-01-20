@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/supabase";
 
@@ -39,6 +39,25 @@ export default function NoteForm({ initialData }: NoteFormProps) {
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 2. 빵집 검색 함수
+  const searchBakery = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    setIsSearching(true);
+    const { data } = await supabase
+      .from("bakeries")
+      .select("*")
+      .ilike("name", `%${query}%`)
+      .limit(5);
+
+    setSearchResults(data || []);
+    setIsSearching(false);
+    setShowDropdown(true);
+  }, []);
+
   // 1. 초기 진입 시 URL 파라미터나 초기 데이터 처리
   useEffect(() => {
     const initForm = async () => {
@@ -64,26 +83,7 @@ export default function NoteForm({ initialData }: NoteFormProps) {
       }
     };
     initForm();
-  }, [initialData, searchParams]);
-
-  // 2. 빵집 검색 함수
-  const searchBakery = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setShowDropdown(false);
-      return;
-    }
-    setIsSearching(true);
-    const { data } = await supabase
-      .from("bakeries")
-      .select("*")
-      .ilike("name", `%${query}%`)
-      .limit(5);
-
-    setSearchResults(data || []);
-    setIsSearching(false);
-    setShowDropdown(true);
-  };
+  }, [initialData, searchParams, searchBakery]);
 
   // 검색어 입력 핸들러 (디바운스 적용 권장하지만 여기선 간단히 구현)
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +102,7 @@ export default function NoteForm({ initialData }: NoteFormProps) {
 
   // 이미지 업로드 (기존 동일)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
@@ -189,12 +189,16 @@ export default function NoteForm({ initialData }: NoteFormProps) {
     >
       {/* 빵집 검색 영역 */}
       <div className="mb-6 relative">
-        <label className="block text-sm font-bold text-orange-800 mb-2">
+        <label
+          htmlFor="bakery-search"
+          className="block text-sm font-bold text-orange-800 mb-2"
+        >
           어떤 빵집을 다녀오셨나요?
         </label>
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <input
+              id="bakery-search"
               className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 ${selectedBakery ? "border-green-500 bg-green-50" : "border-orange-200"}`}
               value={searchTerm}
               onChange={handleSearchChange}
@@ -218,20 +222,21 @@ export default function NoteForm({ initialData }: NoteFormProps) {
             {isSearching ? (
               <div className="p-3 text-gray-400 text-sm">검색 중...</div>
             ) : searchResults.length > 0 ? (
-              <ul>
+              <div className="divide-y divide-gray-50">
                 {searchResults.map((bakery) => (
-                  <li
+                  <button
+                    type="button"
                     key={bakery.id}
                     onClick={() => handleSelectBakery(bakery)}
-                    className="p-3 hover:bg-orange-50 cursor-pointer border-b border-gray-50 last:border-none"
+                    className="w-full text-left p-3 hover:bg-orange-50 cursor-pointer transition"
                   >
                     <div className="font-bold text-gray-800">{bakery.name}</div>
                     <div className="text-xs text-gray-500">
                       {bakery.address}
                     </div>
-                  </li>
+                  </button>
                 ))}
-              </ul>
+              </div>
             ) : (
               <div className="p-4 text-center">
                 <p className="text-sm text-gray-500 mb-2">
@@ -250,10 +255,14 @@ export default function NoteForm({ initialData }: NoteFormProps) {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-bold text-orange-800 mb-2">
+        <label
+          htmlFor="content"
+          className="block text-sm font-bold text-orange-800 mb-2"
+        >
           후기 내용
         </label>
         <textarea
+          id="content"
           className="w-full p-3 border border-orange-200 rounded-lg h-40 resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -262,10 +271,14 @@ export default function NoteForm({ initialData }: NoteFormProps) {
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-bold text-orange-800 mb-2">
+        <label
+          htmlFor="image-upload"
+          className="block text-sm font-bold text-orange-800 mb-2"
+        >
           사진 첨부
         </label>
         <input
+          id="image-upload"
           type="file"
           accept="image/*"
           onChange={handleFileChange}

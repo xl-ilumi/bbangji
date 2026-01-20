@@ -78,8 +78,7 @@ export default function BakeryLogPage() {
     // searchTerm이 변경되어도 여기서는 자동 로드하지 않음 (검색 버튼 클릭 시 처리)
     // 컴포넌트 마운트 시 최초 1회만 실행
     fetchReviews(0, "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchReviews]);
 
   // 2. 무한 스크롤 감지
   useEffect(() => {
