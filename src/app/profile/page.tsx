@@ -163,7 +163,7 @@ export default function ProfilePage() {
       {/* 1. 프로필 카드 섹션 */}
       <section className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 mb-8 flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* 프로필 이미지 */}
-        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-orange-50 border-4 border-white shadow-md flex-shrink-0">
+        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-orange-50 border-4 border-white shadow-md shrink-0">
           {isEditing && previewUrl ? (
             <Image
               src={previewUrl}
@@ -296,7 +296,7 @@ export default function ProfilePage() {
         {(activeTab === "my_notes" ? myNotes : likedNotes).map((note) => (
           <Link key={note.id} href={`/notes/${note.id}`} className="block">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:border-orange-200 hover:shadow-md transition h-full flex flex-col">
-              <div className="relative w-full h-40 mb-3 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="relative w-full h-40 mb-3 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                 {note.image_url ? (
                   <Image
                     src={note.image_url}
@@ -313,7 +313,7 @@ export default function ProfilePage() {
               <h3 className="font-bold text-lg mb-1 text-gray-900 truncate">
                 {note.title}
               </h3>
-              <p className="text-gray-500 text-xs mb-3 flex-grow line-clamp-2">
+              <p className="text-gray-500 text-xs mb-3 grow line-clamp-2">
                 {note.content}
               </p>
               <div className="flex justify-between items-center text-xs text-gray-400 border-t pt-2 mt-auto">
